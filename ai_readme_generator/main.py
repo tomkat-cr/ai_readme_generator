@@ -56,11 +56,16 @@ def get_repo(repo_url, branch):
     return data
 
 
-def get_readme_suggestion(repo_url, branch):
+def get_readme_suggestion(repo_url, branch, file_ext_filter):
     """Gets a readme.md file suggestion from the given GitHub repository URL."""
     repo_data = get_repo(repo_url, branch)
     text = ""
+    file_extensions_allowed = None
+    if file_ext_filter:
+        file_extensions_allowed = [f".{v} for v in file_ext_filter.split(",")]
     for doc_obj in repo_data:
+        if file_ext_filter and not doc_obj.metadata.file_type in file_extensions_allowed:
+            continue
         text += doc_obj.page_content
         text += str(doc_obj.metadata)
 
@@ -99,16 +104,20 @@ def main():
     load_dotenv()
     DEBUG = os.environ.get('DEBUG', '0') == '1'
     branch = None
+    file_ext_filter = None
     if len(sys.argv) > 1:
         repo_url = sys.argv[1]
         if len(sys.argv) > 2:
             branch = sys.argv[2]
+        if len(sys.argv) > 3:
+            branfile_ext_filterch = sys.argv[3]
     else:
         repo_url = str(input("Github repository URL: "))   # example: "https://github.com/bard/ai-assistant"
         branch = str(input("Branch (default 'main'): "))
+        file_ext_filter = str(input("file extension filter (default all files): "))
     print()
     print("AI README.md file generator")
-    readme_suggestion = get_readme_suggestion(repo_url, branch)
+    readme_suggestion = get_readme_suggestion(repo_url, branch, file_ext_filter)
     print()
     print("The suggested README.md is:")
     print(readme_suggestion)
