@@ -64,7 +64,7 @@ def get_readme_suggestion(repo_url, branch):
     # https://platform.openai.com/docs/api-reference/completions/create
     # https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
 
-    if os.getenv("OPENAI_API_KEY"):
+    if os.getenv("OPENAI_API_KEY") != "":
         openai.api_key = os.getenv("OPENAI_API_KEY")
     else:
         openai.api_key = str(input("Enter OPENAI_API_KEY: "))
