@@ -106,11 +106,18 @@ def get_readme_suggestion(repo_url, branch, file_ext_filter):
     file_extensions_allowed = None
     if file_ext_filter:
         file_extensions_allowed = [f".{v}" for v in file_ext_filter.split(",")]
+        print(f"File extensions allowed: {file_extensions_allowed}")
+        if DEBUG:
+            print()
+            print("Files to be included in the context:")
+        
     for doc_obj in repo_data:
         if file_ext_filter and not doc_obj.metadata.file_type in file_extensions_allowed:
             continue
         text += doc_obj.page_content
         text += str(doc_obj.metadata)
+        if DEBUG:
+            print(doc_obj.metadata.file_name)
 
     # https://platform.openai.com/docs/api-reference/completions/create
     # https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
