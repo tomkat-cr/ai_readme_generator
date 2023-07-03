@@ -97,10 +97,10 @@ def get_repo(repo_url, branch):
 
 def get_readme_suggestion(repo_url, branch, file_ext_filter):
     """Gets a readme.md file suggestion from the given GitHub repository URL."""
-    repo_response = get_repo(repo_url, branch)}
+    repo_response = get_repo(repo_url, branch)
     if repo_response["error"]:
         return repo_response["error_msg"]
-    repo_data = respose["data"]
+    repo_data = repo_response["data"]
 
     text = ""
     file_extensions_allowed = None
