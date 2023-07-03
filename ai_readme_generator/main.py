@@ -41,8 +41,8 @@ def get_repo(repo_url, branch):
     if not branch:
         branch = repo.head.reference
     print()
-    print(f"Github repository URL: {repo_url}"))
-    print(f"Branch (default 'main'): {branch}"))
+    print(f"Github repository URL: {repo_url}")
+    print(f"Branch (default 'main'): {branch}")
     loader = GitLoader(
         repo_path=f"{local_temp_repo_path}/",
         branch=branch
