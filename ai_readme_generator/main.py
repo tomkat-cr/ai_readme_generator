@@ -1,4 +1,5 @@
 import os
+import sys
 
 from dotenv import load_dotenv
 from git import Repo
@@ -26,15 +27,22 @@ def remove_dir(local_temp_path):
             os.rmdir(os.path.join(root, name))
 
 
-def get_repo(repo_url):
-    # https://python.langchain.com/docs/modules/data_connection/document_loaders/integrations/git
-    local_temp_repo_path = f"/tmp/{repo_url.rsplit('/', 1)[1]}"
-    remove_dir(local_temp_repo_path)
-    repo = Repo.clone_from(
-        url=repo_url,
-        to_path=local_temp_repo_path
-    )
-    branch = repo.head.reference
+def get_repo(repo_url, branch):
+    if repo_url[:8] == "https://":
+        # https://python.langchain.com/docs/modules/data_connection/document_loaders/integrations/git
+        local_temp_repo_path = f"/tmp/{repo_url.rsplit('/', 1)[1]}"
+        remove_dir(local_temp_repo_path)
+        repo = Repo.clone_from(
+            url=repo_url,
+            to_path=local_temp_repo_path
+        )
+    else:
+        repo = Repo(repo_url)
+    if not branch:
+        branch = repo.head.reference
+    print()
+    print(f"Github repository URL: {repo_url}"))
+    print(f"Branch (default 'main'): {branch}"))
     loader = GitLoader(
         repo_path=f"{local_temp_repo_path}/",
         branch=branch
@@ -48,9 +56,9 @@ def get_repo(repo_url):
     return data
 
 
-def get_readme_suggestion(repo_url):
+def get_readme_suggestion(repo_url, branch):
     """Gets a readme.md file suggestion from the given GitHub repository URL."""
-    repo_data = get_repo(repo_url)
+    repo_data = get_repo(repo_url, branch)
     text = ""
     for doc_obj in repo_data:
         text += doc_obj.page_content
@@ -59,7 +67,11 @@ def get_readme_suggestion(repo_url):
     # https://platform.openai.com/docs/api-reference/completions/create
     # https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
 
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    if os.getenv("OPENAI_API_KEY"):
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+    else:
+        openai.api_key = str(input("Enter OPENAI_API_KEY: "))
+
     messages = [
         {
             "role": "system",
@@ -86,8 +98,18 @@ def main():
     global DEBUG
     load_dotenv()
     DEBUG = os.environ.get('DEBUG', '0') == '1'
-    repo_url = str(input("Github repository URL: "))   # example: "https://github.com/bard/ai-assistant"
-    readme_suggestion = get_readme_suggestion(repo_url)
+    branch = None
+    if len(sys.argv) > 1:
+        repo_url = sys.argv[1]
+        if len(sys.argv) > 2:
+            branch = sys.argv[2]
+    else:
+        repo_url = str(input("Github repository URL: "))   # example: "https://github.com/bard/ai-assistant"
+        branch = str(input("Branch (default 'main'): "))
+    print()
+    print("AI README.md file generator")
+    readme_suggestion = get_readme_suggestion(repo_url, branch)
+    print()
     print("The suggested README.md is:")
     print(readme_suggestion)
 
