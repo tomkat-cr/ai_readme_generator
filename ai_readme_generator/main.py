@@ -165,7 +165,7 @@ def main():
         if len(sys.argv) > 2:
             branch = sys.argv[2]
         if len(sys.argv) > 3:
-            branfile_ext_filterch = sys.argv[3]
+            file_ext_filter = sys.argv[3]
     else:
         repo_url = str(input("Github repository URL: "))   # example: "https://github.com/bard/ai-assistant"
         branch = str(input("Branch (default 'main'): "))
