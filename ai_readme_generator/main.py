@@ -28,41 +28,84 @@ def remove_dir(local_temp_path):
 
 
 def get_repo(repo_url, branch):
+    response = {
+        "error": False,
+        "error_msg": "",
+    }
     if repo_url[:8] == "https://":
         # https://python.langchain.com/docs/modules/data_connection/document_loaders/integrations/git
         local_temp_repo_path = f"/tmp/{repo_url.rsplit('/', 1)[1]}"
-        remove_dir(local_temp_repo_path)
-        repo = Repo.clone_from(
-            url=repo_url,
-            to_path=local_temp_repo_path
-        )
+        try:
+            remove_dir(local_temp_repo_path)
+        except Exception as err:
+            if DEBUG:
+                raise
+            response["error"] = True
+            response["error_msg"] = f"ERROR: {str(err)}"
+            return response
+        try:
+            repo = Repo.clone_from(
+                url=repo_url,
+                to_path=local_temp_repo_path
+            )
+        except Exception as err:
+            if DEBUG:
+                raise
+            response["error"] = True
+            response["error_msg"] = f"ERROR: {str(err)}"
+            return response
     else:
-        repo = Repo(repo_url)
+        try:
+            repo = Repo(repo_url)
+        except Exception as err:
+            if DEBUG:
+                raise
+            response["error"] = True
+            response["error_msg"] = f"ERROR: {str(err)}"
+            return response
     if not branch:
-        branch = repo.head.reference
+        try:
+            branch = repo.head.reference
+        except Exception as err:
+            if DEBUG:
+                raise
+            response["error"] = True
+            response["error_msg"] = f"ERROR: {str(err)}"
+            return response
     print()
     print(f"Github repository URL: {repo_url}")
     print(f"Branch (default 'main'): {branch}")
-    loader = GitLoader(
-        repo_path=f"{local_temp_repo_path}/",
-        branch=branch
-    )
-    data = loader.load()
+    try:
+        loader = GitLoader(
+            repo_path=f"{local_temp_repo_path}/",
+            branch=branch
+        )
+    except Exception as err:
+        if DEBUG:
+            raise
+        response["error"] = True
+        response["error_msg"] = f"ERROR: {str(err)}"
+        return response
+    reponse["data"] = loader.load()
     if DEBUG:
         print(f"Repo: {repo_url}")
         print(f"Branch: {branch}")
         print("Data:")
-        pprint(data)
-    return data
+        pprint(response["data"])
+    return response
 
 
 def get_readme_suggestion(repo_url, branch, file_ext_filter):
     """Gets a readme.md file suggestion from the given GitHub repository URL."""
-    repo_data = get_repo(repo_url, branch)
+    repo_response = get_repo(repo_url, branch)}
+    if repo_response["error"]:
+        return repo_response["error_msg"]
+    repo_data = respose["data"]
+
     text = ""
     file_extensions_allowed = None
     if file_ext_filter:
-        file_extensions_allowed = [f".{v} for v in file_ext_filter.split(",")]
+        file_extensions_allowed = [f".{v}" for v in file_ext_filter.split(",")]
     for doc_obj in repo_data:
         if file_ext_filter and not doc_obj.metadata.file_type in file_extensions_allowed:
             continue
@@ -85,10 +128,15 @@ def get_readme_suggestion(repo_url, branch, file_ext_filter):
         {"role": "user", "content": text},
     ]
     print("Processing...")
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=messages,
-    )
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=messages,
+        )
+    except Exception as err:
+        if DEBUG:
+            raise
+        return f"ERROR: {str(err)}"
     print("Processing done!")
     if DEBUG:
         print("The response is:")
