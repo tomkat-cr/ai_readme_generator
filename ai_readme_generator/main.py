@@ -28,7 +28,7 @@ def remove_dir(local_temp_path):
 
 
 def get_repo(repo_url, branch):
-    if repo_url[:6] == "https":
+    if repo_url[:8] == "https://":
         # https://python.langchain.com/docs/modules/data_connection/document_loaders/integrations/git
         local_temp_repo_path = f"/tmp/{repo_url.rsplit('/', 1)[1]}"
         remove_dir(local_temp_repo_path)
