@@ -86,7 +86,7 @@ def get_repo(repo_url, branch):
         response["error"] = True
         response["error_msg"] = f"ERROR: {str(err)}"
         return response
-    reponse["data"] = loader.load()
+    response["data"] = loader.load()
     if DEBUG:
         print(f"Repo: {repo_url}")
         print(f"Branch: {branch}")
