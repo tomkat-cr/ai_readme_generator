@@ -17,6 +17,22 @@ This project adheres to [Semantic Versioning](http://semver.org/) and [Keep a Ch
 ### Breaks
 
 
+## 0.1.1 (2023-07-03)
+
+### New
+File extensions filter.
+Allows to specify the repo URL, branch and file extesions filter from the command line.
+Ask user for branch (default: main) and file extensions filter if no command line parameters are passed.
+Ask user for openai api key if the environment variable OPENAI_API_KEY has no value.
+Recognize "https://" prefix in repo url to know if it's a local or remote repo.
+Program start header to identify repo URL and branch.
+Print file extensions filter and files to be included.
+
+### Changes
+
+Update README.md.
+
+
 ## 0.1.0 (2023-07-30)
 ---
 
