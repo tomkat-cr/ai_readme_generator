@@ -40,6 +40,9 @@ def get_repo(repo_url, branch):
         repo = Repo(repo_url)
     if not branch:
         branch = repo.head.reference
+    print()
+    print(f"Github repository URL: {repo_url}"))
+    print(f"Branch (default 'main'): {branch}"))
     loader = GitLoader(
         repo_path=f"{local_temp_repo_path}/",
         branch=branch
@@ -102,8 +105,11 @@ def main():
             branch = sys.argv[2]
     else:
         repo_url = str(input("Github repository URL: "))   # example: "https://github.com/bard/ai-assistant"
-        branch = str(input("Branch (default 'main'): "))   # example: "https://github.com/bard/ai-assistant"
+        branch = str(input("Branch (default 'main'): "))
+    print()
+    print("AI README.md file generator")
     readme_suggestion = get_readme_suggestion(repo_url, branch)
+    print()
     print("The suggested README.md is:")
     print(readme_suggestion)
 
