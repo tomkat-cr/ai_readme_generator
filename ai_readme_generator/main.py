@@ -188,7 +188,7 @@ class AiReadmeGenerator():
         if not self.model:
             self.model = "gpt-3.5-turbo-16k"
         try:
-            response = openai.ChatCompletion.create(
+            ai_response = openai.ChatCompletion.create(
                 model=self.model,
                 temperature=self.temperature,
                 messages=messages,
@@ -202,13 +202,14 @@ class AiReadmeGenerator():
         print("Processing done!")
         if self.debug:
             print("The response is:")
-            pprint(response)
+            pprint(ai_response)
         try:
-            return response["choices"][0]["message"]["content"]
+            response["content"] = \
+                ai_response["choices"][0]["message"]["content"]
         except Exception as err:
             response["error"] = True
             response["content"] = f"ERROR: {str(err)}"
-            return response
+        return response
 
     def main(self):
         print()
