@@ -75,5 +75,7 @@ qa: lint types tests format_check pycodestyle
 
 # Application Specific Commands
 run:
-	cd ai_readme_generator
 	pipenv run python -m ai_readme_generator.main
+
+run_help:
+	pipenv run python -m ai_readme_generator.main -h

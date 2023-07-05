@@ -17,30 +17,52 @@ Please note, in order to use this script, you will need the `OPENAI_API_KEY`.
 
 To use the script from command line, please use the following template and fill in the relevant details:
 
+```bash
+pipenv run python -m ai_readme_generator.main -h
 ```
-python main.py [GITHUB REPO URL] [BRANCH] [FILE EXTENSION FILTER]
+
+```bash
+usage: main.py [-h] [-u REPO_URL] [-b BRANCH] [-e FILE_EXT_FILTER] [-m {gpt-3.5-turbo,gpt-3.5-turbo-16k,gpt-4,gpt-4-32k}]
+               [-t TEMPERATURE] [-D DEBUG]
+
+AI README Generator
+
+options:
+  -h, --help            show this help message and exit
+  -u REPO_URL, --repo_url REPO_URL
+                        Git repository URL or local path
+  -b BRANCH, --branch BRANCH
+                        Repository branch name. Default: main
+  -e FILE_EXT_FILTER, --file_ext_filter FILE_EXT_FILTER
+                        Filter the files based on their extensions. For instance: 'py,md', 'js,jsx' or 'php'
+  -m {gpt-3.5-turbo,gpt-3.5-turbo-16k,gpt-4,gpt-4-32k}, --model {gpt-3.5-turbo,gpt-3.5-turbo-16k,gpt-4,gpt-4-32k}
+                        GPT model. Default: gpt-3.5-turbo-16k
+  -t TEMPERATURE, --temperature TEMPERATURE
+                        Temperature for the GPT model. Default: 0.7
+  -D DEBUG, --debug DEBUG
+                        Show debug information
 ```
- 
-- `GITHUB REPO URL`: URL of the repository (HTTPS) for which you want to generate README. It is a mandatory parameter. This can be also a local path, in which case the repo will not be clones in the `/tmp` directory.
+
+- `REPO_URL`: repository URL for which you want to generate README. It is a mandatory parameter. This can be also a local path, so repo won't be cloned in the `/tmp` directory.
 
 - `BRANCH`: It is the branch of the repo from which you want to generate README. This is an optional parameter, the `main` branch will be used by default if no branch is specified.
 
-- `FILE EXTENSION FILTER`: It is to filter the files based on their extensions. For instance: `py,md`, `js,jsx` or `php`. This is an optional parameter, all files will be used if no filter is given.
+- `FILE_EXT_FILTER`: It is to filter the files based on their extensions. For instance: `py,md`, `js,jsx` or `php`. This is an optional parameter, all files will be used if no filter is given.
 
 For instance,
 
-```
-python main.py https://github.com/bard/ai-assistant main py,md
+```bash
+pipenv run python -m ai_readme_generator.main -u https://github.com/bard/ai-assistant -b main -e py,md
 ```
 
 ## Dependencies
 
 Following Python libraries are required:
-- os, sys
-- dotenv (load_dotenv)
 - git (Repo)
 - langchain.document_loaders (GitLoader)
 - openai
+- os, sys
+- dotenv (load_dotenv)
 - pprint
 
 ## Installation Steps
@@ -87,13 +109,13 @@ DEBUG=0
 7. Run it (it'll ask for git repo URL/local path and branch):
 
 ```
-python -m ai_readme_generator.main
+pipenv run python -m ai_readme_generator.main
 ```
 
 8. or run it with repo URL/path and branch
 
 ```
-python -m ai_readme_generator.main https://github.com/tomkat-cr/ai_readme_generator main
+pipenv run python -m ai_readme_generator.main -u https://github.com/tomkat-cr/ai_readme_generator -b main
 ```
 
 ## Note
@@ -110,12 +132,12 @@ Feel free to submit pull requests create issues or spread the word.
 
 Technologies used in the project:
 
-*   python3
-*   openai
-*   langchain
-*   gitpython
-*   pipenv
-*   make
+- python3
+- openai
+- langchain
+- gitpython
+- pipenv
+- make
 
 ## License
 

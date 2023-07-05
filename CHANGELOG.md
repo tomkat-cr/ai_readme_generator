@@ -17,6 +17,21 @@ This project adheres to [Semantic Versioning](http://semver.org/) and [Keep a Ch
 ### Breaks
 
 
+## 0.1.3 (2023-07-05)
+
+### New
+Command line parameters changed from positional to named with the argparse.
+New model and temperature parameters. Defaults: gpt-3.5-turbo-16k and 0.7.
+Converted to the class AiReadmeGenerator.
+
+
+## 0.1.2 (2023-07-04)
+
+### New
+Configurate model and temperature.
+named parameters.
+
+
 ## 0.1.1 (2023-07-03)
 
 ### New
