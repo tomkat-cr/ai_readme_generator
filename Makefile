@@ -49,7 +49,7 @@ fresh: clean_rm install
 
 # Automated Testing
 test:
-	pipenv run pytest tests --junitxml=report.xml
+	pipenv run pytest
 
 # Development Commands
 lint:

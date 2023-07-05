@@ -23,6 +23,7 @@ This project adheres to [Semantic Versioning](http://semver.org/) and [Keep a Ch
 Command line parameters changed from positional to named with the argparse.
 New model and temperature parameters. Defaults: gpt-3.5-turbo-16k and 0.7.
 Converted to the class AiReadmeGenerator.
+"prompt_type" parameter with values: "readme" to handle README.md generation and "test" for pytest generation.
 
 
 ## 0.1.2 (2023-07-04)

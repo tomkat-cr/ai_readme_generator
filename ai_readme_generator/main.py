@@ -17,11 +17,13 @@ class AiReadmeGenerator():
         self.branch = args.branch
         self.file_ext_filter = args.file_ext_filter
         self.model = args.model
-        self.temperature = float(args.temperature)
+        self.temperature = args.temperature
         self.debug = args.debug == '1'
+        self.prompt_type = args.prompt_type
 
     def get_def_values(self):
         load_dotenv()
+
         try:
             if os.getenv("OPENAI_API_KEY"):
                 self.openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -31,8 +33,10 @@ class AiReadmeGenerator():
             return "Keyboard interrupt"
         except Exception as err:
             return str(err)
+
         if self.repo_url:
             return ""
+
         try:
             self.repo_url = str(input(
                 "Git repository URL: "
@@ -50,10 +54,24 @@ class AiReadmeGenerator():
             self.temperature = str(input(
                 "Temperature for the GPT model (default: 0.7): "
             ))
+            self.prompt_type = str(input(
+                "Prompt type (readme|test): "
+            ))
         except KeyboardInterrupt:
             return "Keyboard interrupt"
         except Exception as err:
             return str(err)
+
+        if not self.temperature:
+            self.temperature = 0.7
+        else:
+            self.temperature = float(self.temperature)
+        if not self.model:
+            self.model = "gpt-3.5-turbo-16k"
+        if not self.prompt_type:
+            self.prompt_type = "readme"
+        elif self.prompt_type not in ["readme", "test"]:
+            return "ERROR: Invalid Prompt type."
 
     def remove_dir(self, local_temp_path):
         if local_temp_path == '/':
@@ -98,7 +116,8 @@ class AiReadmeGenerator():
                 return response
         else:
             try:
-                repo = Repo(self.repo_url)
+                local_temp_repo_path = self.repo_url
+                repo = Repo(local_temp_repo_path)
             except Exception as err:
                 if self.debug:
                     raise
@@ -107,7 +126,7 @@ class AiReadmeGenerator():
                 return response
         if not self.branch:
             try:
-                branch = repo.head.reference
+                self.branch = repo.head.reference
             except Exception as err:
                 if self.debug:
                     raise
@@ -120,7 +139,7 @@ class AiReadmeGenerator():
         try:
             loader = GitLoader(
                 repo_path=f"{local_temp_repo_path}/",
-                branch=branch
+                branch=self.branch
             )
         except Exception as err:
             if self.debug:
@@ -135,6 +154,15 @@ class AiReadmeGenerator():
             print("Data:")
             pprint(response["data"])
         return response
+
+    def get_prompt(self, pcode):
+        if pcode == "readme":
+            prompt = "Write a readme.md file for this repository" + \
+                     " content."
+        if pcode == "test":
+            prompt = "Give me a pytest file for this repository" + \
+                     " content."
+        return prompt
 
     def get_readme_suggestion(self):
         """Gets a readme.md file suggestion from the given
@@ -174,19 +202,15 @@ class AiReadmeGenerator():
         # https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
 
         openai.api_key = self.openai_api_key
+        prompt = self.get_prompt(self.prompt_type)
         messages = [
             {
                 "role": "system",
-                "content": "Write a readme.md file for this repository" +
-                           " content."
+                "content": prompt
             },
             {"role": "user", "content": text},
         ]
         print("Processing...")
-        if not self.temperature:
-            self.temperature = 0.7
-        if not self.model:
-            self.model = "gpt-3.5-turbo-16k"
         try:
             ai_response = openai.ChatCompletion.create(
                 model=self.model,
@@ -224,7 +248,7 @@ class AiReadmeGenerator():
         if readme_suggestion["error"]:
             print("Could not generate the suggested README.md:")
         else:
-            print("The suggested README.md is:")
+            print(f"The suggested {self.prompt_type} is:")
         print()
         print(readme_suggestion["content"])
 

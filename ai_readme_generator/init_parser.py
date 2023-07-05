@@ -40,6 +40,14 @@ def init_parser():
         help="Temperature for the GPT model. Default: 0.7",
     )
     parser.add_argument(
+        "-pt", "--prompt_type",
+        default='readme',
+        choices=["readme", "test"],
+        required=False,
+        help="Prompt type: 'readme' to generate the README.md file" +
+             ", 'test' to generate the testing code based on pytest.",
+    )
+    parser.add_argument(
         "-D", "--debug",
         default='0',
         required=False,
