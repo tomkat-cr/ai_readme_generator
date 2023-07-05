@@ -34,33 +34,31 @@ class AiReadmeGenerator():
         except Exception as err:
             return str(err)
 
-        if self.repo_url:
-            return ""
-
-        try:
-            self.repo_url = str(input(
-                "Git repository URL: "
-            ))
-            self.branch = str(input(
-                "Branch (default 'main'): "
-            ))
-            self.file_ext_filter = str(input(
-                "file extension filter (default all files): "
-            ))
-            self.model = str(input(
-                "GPT model (gpt-3.5-turbo, gpt-3.5-turbo-16k," +
-                " gpt-4 or gpt-4-32k): "
-            ))
-            self.temperature = str(input(
-                "Temperature for the GPT model (default: 0.7): "
-            ))
-            self.prompt_type = str(input(
-                "Prompt type (readme|test): "
-            ))
-        except KeyboardInterrupt:
-            return "Keyboard interrupt"
-        except Exception as err:
-            return str(err)
+        if not self.repo_url:
+            try:
+                self.repo_url = str(input(
+                    "Git repository URL: "
+                ))
+                self.branch = str(input(
+                    "Branch (default 'main'): "
+                ))
+                self.file_ext_filter = str(input(
+                    "file extension filter (default all files): "
+                ))
+                self.model = str(input(
+                    "GPT model (gpt-3.5-turbo, gpt-3.5-turbo-16k," +
+                    " gpt-4 or gpt-4-32k): "
+                ))
+                self.temperature = str(input(
+                    "Temperature for the GPT model (default: 0.7): "
+                ))
+                self.prompt_type = str(input(
+                    "Prompt type (readme|test): "
+                ))
+            except KeyboardInterrupt:
+                return "Keyboard interrupt"
+            except Exception as err:
+                return str(err)
 
         if not self.temperature:
             self.temperature = 0.7
@@ -72,6 +70,8 @@ class AiReadmeGenerator():
             self.prompt_type = "readme"
         elif self.prompt_type not in ["readme", "test"]:
             return "ERROR: Invalid Prompt type."
+
+        return ""
 
     def remove_dir(self, local_temp_path):
         if local_temp_path == '/':
