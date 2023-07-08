@@ -29,6 +29,8 @@ install_init:
 	pipenv install langchain
 	pipenv install openai
 	pipenv install GitPython
+	pipenv install chromadb
+	pipenv install tiktoken
 	pipenv run pip freeze > requirements.txt
 
 requirements:
