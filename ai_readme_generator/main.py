@@ -1,10 +1,16 @@
 import os
 
 from dotenv import load_dotenv
-from git import Repo
-from langchain.document_loaders import GitLoader
-import openai
 from pprint import pprint
+
+from git import Repo
+import openai
+from langchain.document_loaders import GitLoader
+
+from langchain.chat_models import ChatOpenAI
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
+from langchain.indexes import VectorstoreIndexCreator
 
 from ai_readme_generator.init_parser import init_parser
 
@@ -20,6 +26,8 @@ class AiReadmeGenerator():
         self.temperature = args.temperature
         self.debug = args.debug == '1'
         self.prompt_type = args.prompt_type
+        self.processing_method = "model_input"
+        # self.processing_method = "embeddings"
 
     def get_def_values(self):
         load_dotenv()
@@ -157,41 +165,29 @@ class AiReadmeGenerator():
 
     def get_prompt(self, pcode):
         if pcode == "readme":
-            prompt = "Write a readme.md file for this repository" + \
-                     " content."
+            prompt = \
+                """Write a readme.md file for this repository content.
+                """
         if pcode == "test":
-            prompt = "Give me a pytest file for this repository" + \
-                     " content."
+            prompt = \
+                """Give me a pytest file for this repository content.
+                """
         return prompt
 
-    def get_readme_suggestion(self):
-        """Gets a readme.md file suggestion from the given
-           GitHub repository URL or local path.
-        """
+    def std_response(self):
         response = {
             "error": False,
             "content": "",
         }
-        repo_response = self.get_repo()
-        if repo_response["error"]:
-            response["error"] = True
-            response["content"] = repo_response["error_msg"]
-            return response
-        repo_data = repo_response["data"]
+        return response
 
+    def model_input_method(self):
+        response = self.std_response()
         text = ""
-        file_extensions_allowed = None
-        if self.file_ext_filter:
-            file_extensions_allowed = \
-                [f".{v}" for v in self.file_ext_filter.split(",")]
-            print(f"File extensions allowed: {file_extensions_allowed}")
-            if self.debug:
-                print()
-                print("Files to be included in the context:")
-
-        for doc_obj in repo_data:
+        for doc_obj in self.repo_data:
             if self.file_ext_filter and \
-               not doc_obj.metadata["file_type"] in file_extensions_allowed:
+               not doc_obj.metadata["file_type"] \
+               in self.file_extensions_allowed:
                 continue
             text += doc_obj.page_content
             text += str(doc_obj.metadata)
@@ -210,7 +206,9 @@ class AiReadmeGenerator():
             },
             {"role": "user", "content": text},
         ]
-        print("Processing...")
+
+        print("Model Input processing start...")
+
         try:
             ai_response = openai.ChatCompletion.create(
                 model=self.model,
@@ -222,17 +220,89 @@ class AiReadmeGenerator():
                 raise
             response["error"] = True
             response["content"] = f"ERROR: {str(err)}"
+
+        print("Model Input processing done!")
+
+        if not response["error"]:
+            try:
+                response["content"] = \
+                    ai_response["choices"][0]["message"]["content"]
+            except Exception as err:
+                response["error"] = True
+                response["content"] = f"ERROR: {str(err)}"
+
+        return response
+
+    def embeddings_method(self):
+        response = self.std_response()
+        prompt = self.get_prompt(self.prompt_type)
+
+        print("Embedding processing start...")
+
+        index = VectorstoreIndexCreator().from_documents(
+            self.repo_data
+        )
+        llm = ChatOpenAI(
+            model=self.model,
+            temperature=self.temperature,
+        )
+        memory = ConversationBufferMemory(
+            memory_key='chat_history', return_messages=True
+        )
+        conversation_chain = ConversationalRetrievalChain.from_llm(
+            llm=llm,
+            retriever=index.vectorstore.as_retriever(),
+            memory=memory
+        )
+
+        print("LLM processing...")
+
+        ai_response = conversation_chain({'question': prompt})
+        chat_history = ai_response['chat_history']
+
+        response["content"] = ""
+        for i, message in enumerate(chat_history):
+            if i % 2 == 0:
+                continue
+            else:
+                response["content"] += message.content
+
+        print("Embedding processing done!")
+
+        return response
+
+    def get_readme_suggestion(self):
+        """Gets a readme.md file suggestion from the given
+           GitHub repository URL or local path.
+        """
+        response = {
+            "error": False,
+            "content": "",
+        }
+        repo_response = self.get_repo()
+        if repo_response["error"]:
+            response["error"] = True
+            response["content"] = repo_response["error_msg"]
             return response
-        print("Processing done!")
+        self.repo_data = repo_response["data"]
+
+        self.file_extensions_allowed = None
+        if self.file_ext_filter:
+            self.file_extensions_allowed = \
+                [f".{v}" for v in self.file_ext_filter.split(",")]
+            print(f"File extensions allowed: {self.file_extensions_allowed}")
+            if self.debug:
+                print()
+                print("Files to be included in the context:")
+
+        if self.processing_method == "embeddings":
+            response = self.embeddings_method()
+        else:
+            response = self.model_input_method()
+
         if self.debug:
             print("The response is:")
-            pprint(ai_response)
-        try:
-            response["content"] = \
-                ai_response["choices"][0]["message"]["content"]
-        except Exception as err:
-            response["error"] = True
-            response["content"] = f"ERROR: {str(err)}"
+            pprint(response)
         return response
 
     def main(self):

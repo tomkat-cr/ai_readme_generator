@@ -9,6 +9,8 @@ openai = "*"
 gitpython = "*"
 python-dotenv = "*"
 numpy = "*"
+chromadb = "*"
+tiktoken = "*"
 
 [dev-packages]
 pytest = "*"
