@@ -17,6 +17,12 @@ This project adheres to [Semantic Versioning](http://semver.org/) and [Keep a Ch
 ### Breaks
 
 
+## 0.1.4 (2023-07-07)
+
+### New
+Embeddings processing (1st approach).
+
+
 ## 0.1.3 (2023-07-05)
 
 ### New
