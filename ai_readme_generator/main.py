@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 from pprint import pprint
 
 from git import Repo
-import openai
+from openai import OpenAI
+
 from langchain.document_loaders import GitLoader
 
 from langchain.chat_models import ChatOpenAI
@@ -54,8 +55,7 @@ class AiReadmeGenerator():
                     "file extension filter (default all files): "
                 ))
                 self.model = str(input(
-                    "GPT model (gpt-3.5-turbo, gpt-3.5-turbo-16k," +
-                    " gpt-4 or gpt-4-32k): "
+                    "GPT model (gpt-3.5-turbo, gpt-4-turbo-preview): "
                 ))
                 self.temperature = str(input(
                     "Temperature for the GPT model (default: 0.7): "
@@ -197,7 +197,7 @@ class AiReadmeGenerator():
         # https://platform.openai.com/docs/api-reference/completions/create
         # https://github.com/openai/openai-cookbook/blob/main/examples/Question_answering_using_embeddings.ipynb
 
-        openai.api_key = self.openai_api_key
+        
         prompt = self.get_prompt(self.prompt_type)
         messages = [
             {
@@ -210,11 +210,10 @@ class AiReadmeGenerator():
         print("Model Input processing start...")
 
         try:
-            ai_response = openai.ChatCompletion.create(
-                model=self.model,
-                temperature=self.temperature,
-                messages=messages,
-            )
+            client = OpenAI(api_key=self.openai_api_key)
+            ai_response = client.chat.completions.create(model=self.model,
+            temperature=self.temperature,
+            messages=messages)
         except Exception as err:
             if self.debug:
                 raise
@@ -226,7 +225,8 @@ class AiReadmeGenerator():
         if not response["error"]:
             try:
                 response["content"] = \
-                    ai_response["choices"][0]["message"]["content"]
+                    ai_response.choices[0].message.content
+                    # ai_response["choices"][0]["message"]["content"]
             except Exception as err:
                 response["error"] = True
                 response["content"] = f"ERROR: {str(err)}"
